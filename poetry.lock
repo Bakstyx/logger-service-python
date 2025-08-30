@@ -1306,6 +1306,18 @@ nearley = ["js2py"]
 regex = ["regex"]
 
 [[package]]
+name = "loki-logger-handler"
+version = "1.1.2"
+description = "Handler designed for transmitting logs to Grafana Loki in JSON format."
+optional = false
+python-versions = ">=2.7"
+groups = ["main"]
+files = [
+    {file = "loki_logger_handler-1.1.2-py3-none-any.whl", hash = "sha256:7ee10259162caf6aa21b784d753dc2f73102225517857bb40051b7e933cfd07d"},
+    {file = "loki_logger_handler-1.1.2.tar.gz", hash = "sha256:b3b588903420197ac9bb477f9c8fd6c18edf3e475b94f3d27d2aeed3930eb5d1"},
+]
+
+[[package]]
 name = "markupsafe"
 version = "3.0.2"
 description = "Safely add untrusted strings to HTML/XML markup."
@@ -1751,6 +1763,21 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python-dotenv"
+version = "1.1.1"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "python_dotenv-1.1.1-py3-none-any.whl", hash = "sha256:31f23644fe2602f88ff55e1f5c79ba497e01224ee7737937930c448e4d0e24dc"},
+    {file = "python_dotenv-1.1.1.tar.gz", hash = "sha256:a8a6399716257f45be6a007360200409fce5cda2661e3dec71d23dc15f6189ab"},
+]
+
+[package.extras]
+cli = ["click (>=5.0)"]
 
 [[package]]
 name = "python-json-logger"
@@ -2699,4 +2726,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "7054e340a918af0de017ba67043d908813c35ff3ddc518162d260327ae9bc911"
+content-hash = "66f7f2dfe561d15887629738ab8602767b21096d136f93cd511952d1fa515e33"

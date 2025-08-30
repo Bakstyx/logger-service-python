@@ -2,11 +2,14 @@ import inspect
 import logging
 import os
 import traceback
-from logging import Formatter, Handler, StreamHandler
+from logging import Handler, StreamHandler, Formatter
 from typing import Literal, Optional
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+
+#Loki handelers
+from loki_logger_handler.loki_logger_handler import LokiLoggerHandler
 
 from .log_models import Log
 
@@ -34,13 +37,32 @@ class AutoTracker:
                 - 'lineno': The line number in the source code where the call was made.
                 - 'module': The name of the module where the call was made.
         """
-        frame = inspect.currentframe().f_back.f_back.f_back
-        return {
-            "function" : frame.f_code.co_name,
-            "lineno": frame.f_lineno,
-            "module":frame.f_globals.get("__name__"),
-            "class": frame.f_locals.get("self").__class__.__name__,
-        }
+        frame = inspect.currentframe()
+        last_available_frame = frame
+        # Traverse up to 3 frames, keeping track of the last available frame
+        for _ in range(3):
+            if frame is not None and hasattr(frame, "f_back"):
+                frame = frame.f_back
+                if frame is not None:
+                    last_available_frame = frame
+            else:
+                break
+        if last_available_frame is not None:
+            return {
+                "function": last_available_frame.f_code.co_name,
+                "lineno": last_available_frame.f_lineno,
+                "module": last_available_frame.f_globals.get("__name__"),
+                "class": last_available_frame.f_locals.get("self").__class__.__name__
+                    if "self" in last_available_frame.f_locals
+                    else None,
+            }
+        else:
+            return {
+                "function": None,
+                "lineno": None,
+                "module": None,
+                "class": None,
+            }
 
 
 class Logger:
@@ -128,13 +150,11 @@ class Logger:
             logging.CRITICAL, f"Critical: {message}", *args, exc_info=True, **kwargs
         )
 
-    def __del__(self):
+    def _close_logger(self):
         # Clean up handlers when the logger is destroyed
         for handler in self._logger.handlers[:]:
             handler.close()
             self._logger.removeHandler(handler)
-
-
 
 
 
@@ -218,5 +238,78 @@ class PostgreSQLLogger(Logger):
     def critical(self, message: str, error_info: Optional[dict] = None, *args, **kwargs):
         self._log(logging.CRITICAL, f"Critical: {message}", *args, exc_info=True, extra=error_info or {}, **kwargs)
 
+
+
+class LokiHandeler(Handler):
+    # LokiLoggerHandler
+    def __init__(
+        self,
+        loki_url: str,
+        labels: Optional[dict] = None,
+        label_keys: Optional[dict] = None,
+        loki_metadata: Optional[dict] = None,
+        ):
+        super().__init__()
+        self.loki_handler = LokiLoggerHandler(
+            url=loki_url,
+            labels=labels,
+            label_keys=label_keys,
+            timeout=5,
+            enable_structured_loki_metadata=True,
+            loki_metadata=loki_metadata,
+        )
+    def emit(self, record):
+        self.loki_handler.emit(record)
+
+class LokiLoggerService(Logger):
+    def __init__(
+        self,
+        loki_config: dict,
+        formatter_type: Optional[Literal["local", "dev", "test", "prod"]] = "local",
+        name: Optional[str] = None,
+    ) -> None:
+        self.log_file = None
+        self.name = name
+        self.formatter_type = formatter_type
+        self.loki_config = loki_config
+        self._setup_logger()
+
+    def __validate_config__ (self):
+        # Validate loki_config here
+        pass
+
+    def _setup_logger(self):
+        self._logger = logging.getLogger(self.name or __name__)
+        self._logger.setLevel(logging.DEBUG)
+
+        # Remove existing handlers
+        for handler in self._logger.handlers[:]:
+            self._logger.removeHandler(handler)
+
+        if self.formatter_type == "local":
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s -> %(custom_module)s - %(custom_function)s - %(custom_lineno)d"
+            )
+        else:
+            formatter = logging.Formatter(
+                "%(name)s - %(levelname)s - %(message)s -> %(custom_module)s - %(custom_function)s - %(custom_lineno)d"
+            )
+
+        # Loki handler
+        loki_handeler = LokiHandeler(
+            loki_url=self.loki_config.get("loki_url", ""),
+            labels=self.loki_config.get("labels", {}),
+            label_keys=self.loki_config.get("label_keys", {}),
+            loki_metadata=self.loki_config.get("loki_metadata", {}),
+        )
+        loki_handeler.setLevel(logging.DEBUG)
+        loki_handeler.setFormatter(formatter)
+        self._logger.addHandler(loki_handeler)
+
+        # Console handeler
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(formatter)
+        self._logger.addHandler(console_handler)
 
 
