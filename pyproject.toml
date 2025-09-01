@@ -32,3 +32,10 @@ target-version = "py313"
 jupyter = "^1.1.1"
 python-dotenv = "^1.1.1"
 
+
+[tool.poetry]
+name = "logger-system"
+version = "0.1.0"
+description = "Python Logger service with multiple handlers integrations"
+authors = ["Bakstyx bakstyx.012@gmail.com"]
+packages = [{ include = "logger_system", from = "src" }]
