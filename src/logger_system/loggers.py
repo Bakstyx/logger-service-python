@@ -2,14 +2,12 @@ import inspect
 import logging
 import os
 import traceback
-from logging import Handler, StreamHandler, Formatter
+from logging import Handler, StreamHandler
 from typing import Literal, Optional
 
+from loki_logger_handler.loki_logger_handler import LokiLoggerHandler
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
-#Loki handelers
-from loki_logger_handler.loki_logger_handler import LokiLoggerHandler
 
 from .log_models import Log
 
