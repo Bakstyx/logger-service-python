@@ -1,6 +1,6 @@
 [project]
 name = "logger-service-python"
-version = "0.1.0"
+version = "1.0.4"
 description = "Python Logger service with multiple handlers integrations"
 authors = [
     {name = "Bakstyx",email = "bakstyx.012@gmail.com"}
@@ -8,9 +8,11 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "ruff (>=0.12.10,<0.13.0)",
+    "ruff (>=0.12.10,<0.14.0)",
     "sqlalchemy (>=2.0.43,<3.0.0)",
-    "loki-logger-handler (>=1.1.2,<2.0.0)"
+    "loki-logger-handler (>=1.1.2,<2.0.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)",
+    "requests (>=2.32.5,<3.0.0)"
 ]
 
 
@@ -30,12 +32,11 @@ target-version = "py313"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.1.1"
-python-dotenv = "^1.1.1"
 
 
 [tool.poetry]
-name = "logger-system"
-version = "0.1.0"
+name = "logger-service-python"
+version = "1.0.2"
 description = "Python Logger service with multiple handlers integrations"
 authors = ["Bakstyx bakstyx.012@gmail.com"]
 packages = [{ include = "logger_system", from = "src" }]
