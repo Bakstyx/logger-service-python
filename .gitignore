@@ -212,3 +212,6 @@ logs/*.log
 logs
 *.log
 *.out
+
+
+fury.exe
